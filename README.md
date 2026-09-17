@@ -1,16 +1,21 @@
-<div align="center">
-
-# dsh-skills
-
-**DeepSeek Harness 专属技能，一个技能一个目录** · 写插件、排查运行时、处理工具调用故障
+这里收集与 DeepSeek Harness 绑定的技能——目录名叫 `dsh-skills` 只是仓库的位置，它不是技能。
 
 [![skills](https://img.shields.io/badge/skills-1-blue)](#技能)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![validate](https://github.com/plyflai/dsh-skills/actions/workflows/validate.yml/badge.svg)](https://github.com/plyflai/dsh-skills/actions/workflows/validate.yml)
 
-</div>
+## 技能
 
----
+每个技能自成一个目录、一个入口 `SKILL.md`，**互不隶属**。目录名 = `SKILL.md` 里的 `name`。
+
+| 技能 | 一句话 | 依赖 |
+| --- | --- | --- |
+| [`dsh-toolcall-guard`](skills/dsh-toolcall-guard/) | 模型把工具调用输出成 `<tool_call>` 伪 XML 文本块导致会话卡死时，按需加载并引导模型原生重发、停止重复、继续原任务 | Node ≥ 18（仅可选的确定性解析脚本） |
+| [`_template`](skills/_template/) | 新增技能的骨架，复制改名即用（以下划线开头，不参与安装） | 无 |
+
+通用技能（与 harness 解耦）不在这个仓库，见 [plyflai/agent-skills](https://github.com/plyflai/agent-skills)。
+
+**判断标准**：如果这个技能里的知识换了 harness 就作废，它属于这里；否则归 agent-skills。
 
 ## dsh-toolcall-guard
 
@@ -32,19 +37,6 @@ git clone https://github.com/plyflai/dsh-skills && cd dsh-skills
 ```
 
 `~/.dsh/skills` 是 DSH skill-filesystem 的用户根目录，watch 默认开启：软链接就位后下一个模型 step 就进入技能目录，**无需重启**。
-
-## 技能
-
-每个技能自成一个目录、一个入口 `SKILL.md`，**互不隶属**。目录名 = `SKILL.md` 里的 `name`。
-
-| 技能 | 一句话 | 依赖 |
-| --- | --- | --- |
-| [`dsh-toolcall-guard`](skills/dsh-toolcall-guard/) | 模型把工具调用输出成 `<tool_call>` 伪 XML 文本块导致会话卡死时，按需加载并引导模型原生重发、停止重复、继续原任务 | Node ≥ 18（仅可选的确定性解析脚本） |
-| [`_template`](skills/_template/) | 新增技能的骨架，复制改名即用（以下划线开头，不参与安装） | 无 |
-
-通用技能（与 harness 解耦）不在本仓库，见 [plyflai/agent-skills](https://github.com/plyflai/agent-skills)。
-
-**判断标准**：如果这个技能里的知识换了 harness 就作废，它属于这里；否则归 agent-skills。
 
 ## 安装
 
