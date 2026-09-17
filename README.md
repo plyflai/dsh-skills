@@ -61,7 +61,58 @@ git clone https://github.com/plyflai/dsh-skills && cd dsh-skills
 
 ### 各 harness 装在哪
 
-<!-- HARNESS_TABLE -->
+| Harness | 用户级 | 项目级 | 调用 |
+| --- | --- | --- | --- |
+| **跨工具通用** | `~/.agents/skills/` | `.agents/skills/` | 取决于各 harness |
+| **Codex CLI** | `~/.agents/skills/`<br>`~/.codex/skills/` | `.agents/skills/`（从 cwd 逐级扫到仓库根） | `/skills` 或 `$<技能名>` |
+| **Gemini CLI** | `~/.agents/skills/`<br>`~/.gemini/skills/` | `.agents/skills/`<br>`.gemini/skills/` | 说完需求后模型自行激活，需你确认 |
+| **Qwen Code** | `~/.qwen/skills/` | `.qwen/skills/` | `/<技能名>` 或 `/skills` 面板 |
+| **Claude Code** | `~/.claude/skills/` | `.claude/skills/` | 说完需求后模型自行调用，或 `/<技能名>` |
+| **DSH** | `~/.agents/skills/`<br>`~/.dsh/skills/` | `.agents/skills/`<br>`.dsh/skills/` | 说完需求后模型自行加载 |
+
+### 装一次，多个 harness 共用
+
+`~/.agents/skills/` 是**跨工具共用路径**，Codex、Gemini CLI、DSH 都会读它（Gemini CLI 官方原话是「`.agents/skills/` 别名提供了一条可互操作的路径，跨不同 AI 工具保持兼容」，DSH 把它作为 `user-agents` 源读取）。所以最省事的装法是：
+
+```bash
+git clone https://github.com/plyflai/agent-skills && cd agent-skills
+./scripts/install.sh deeptalk --target ~/.agents/skills
+```
+
+Claude Code 和 Qwen Code 不认这个路径，各装一份即可（用 `--link` 免得复制多份）：
+
+```bash
+./scripts/install.sh deeptalk --target ~/.claude/skills --link   # Claude Code
+./scripts/install.sh deeptalk --target ~/.qwen/skills   --link   # Qwen Code
+```
+
+### 用各 harness 自带的安装器
+
+```bash
+# Codex
+codex plugin marketplace add plyflai/agent-skills
+codex plugin add deeptalk@plyflai-skills
+
+# Gemini CLI
+gemini skills install https://github.com/plyflai/agent-skills.git --path skills/deeptalk
+
+# Claude Code
+/plugin marketplace add plyflai/agent-skills
+/plugin install deeptalk@plyflai-skills
+```
+
+> `.claude-plugin/marketplace.json` 不只 Claude Code 读——**Codex 也读**（实测 `codex plugin marketplace add` 能解析出 `deeptalk@plyflai-skills` 并安装成功）。所以这一个文件同时服务两个 harness。
+
+### 其他 harness
+
+Gemini CLI、Codex、DSH、Claude Code、Qwen Code 的路径都来自官方文档或源码。你自己用的 harness 若不在上表（Cursor、Windsurf、Cline、Roo Code、GitHub Copilot 等），**请查它的官方文档确认技能目录，不要照搬别家的路径**。
+
+共同点只有一条：把含 `SKILL.md` 的整个目录放进它扫描技能的位置。技能目录名要和 `SKILL.md` 里的 `name` 一致。
+
+### 调用方式
+
+Agent Skills 是**按需加载**的：harness 启动时只注入每个技能的 `name` 和 `description`，命中触发条件时才读整个 `SKILL.md`。所以 `description` 里写的是「什么时候用我」，不是「我有什么功能」。
+
 
 ## 技能怎么用
 

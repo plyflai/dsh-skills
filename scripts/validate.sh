@@ -84,31 +84,52 @@ for dir in "$SKILLS_DIR"/*/; do
     ok "description 存在（${#fm_desc} 字符）"
   fi
 
-  # --- 4. SKILL.md 引用的相对路径必须真实存在 ---
-  # 允许两种基准：技能目录内，或仓库根（用来引用 scripts/、README.md 这类仓库级文件）。
-  missing="$(python3 - "$skill_md" "$dir" "$REPO_ROOT" <<'PY'
+  # --- 4. 文档里引用的相对路径必须真实存在 ---
+  # 允许两种基准：技能目录内，或仓库根（用来引用 scripts/、LICENSE 这类仓库级文件）。
+  # mode=strict：SKILL.md，markdown 链接与行内代码里的文件名都算引用。
+  # mode=loose ：技能自己的 README.md，只查 markdown 链接——README 大量用 <你的技能目录> 这类占位符。
+  missing_refs() {
+    python3 - "$1" "$dir" "$REPO_ROOT" "$2" <<'PY'
 import re, sys, pathlib
 md = pathlib.Path(sys.argv[1])
 roots = [pathlib.Path(sys.argv[2]), pathlib.Path(sys.argv[3])]
+mode = sys.argv[4]
 text = md.read_text('utf-8', errors='replace')
 refs = set()
 for m in re.finditer(r'\]\(([^)#\s]+)\)', text):          # markdown 链接
     refs.add(m.group(1))
-for m in re.finditer(r'`([\w./-]+\.(?:md|py|sh|ya?ml|json|mjs|js))`', text):  # 行内代码里的文件
-    refs.add(m.group(1))
+if mode == 'strict':
+    for m in re.finditer(r'`([\w./-]+\.(?:md|py|sh|ya?ml|json|mjs|js))`', text):
+        refs.add(m.group(1))
 for r in sorted(refs):
     if r.startswith(('http://', 'https://', 'mailto:', '/')):
+        continue
+    if '<' in r or '>' in r:        # 文档占位符，不是真路径
         continue
     if not any((root / r).exists() for root in roots):
         print(r)
 PY
-)"
+  }
+
+  missing="$(missing_refs "$skill_md" strict)"
   if [ -n "$missing" ]; then
     while IFS= read -r ref; do
       [ -n "$ref" ] && err "SKILL.md 引用了不存在的文件：$ref"
     done <<< "$missing"
   else
     ok "SKILL.md 里的相对引用全部存在"
+  fi
+
+  # --- 4b. 技能自己的 README.md（它会被安装器一起拷给用户）---
+  if [ -f "$dir/README.md" ]; then
+    missing="$(missing_refs "$dir/README.md" loose)"
+    if [ -n "$missing" ]; then
+      while IFS= read -r ref; do
+        [ -n "$ref" ] && err "README.md 引用了不存在的文件：$ref"
+      done <<< "$missing"
+    else
+      ok "README.md 里的相对链接全部存在"
+    fi
   fi
 
   # --- 5. 无 .DS_Store ---
