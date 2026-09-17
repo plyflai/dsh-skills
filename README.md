@@ -45,6 +45,17 @@ cd dsh-skills
 
 装到其他 harness 请把 `--target` 换成对应的技能目录。
 
+### Claude Code 插件市场
+
+仓库根带 `.claude-plugin/marketplace.json`，也可作为插件市场添加：
+
+```bash
+/plugin marketplace add plyflai/dsh-skills
+/plugin install dsh-skills@plyflai-dsh-skills
+```
+
+本仓库是 skills-only，条目用 `"source": "./"` + `"strict": false` 直接指向 `skills/`，不需要每个技能各自的 `plugin.json`。清单里的 marketplace 名是 `plyflai-dsh-skills`（`agent-skills` 等名字在 Claude Code 保留名列表里，第三方用了会导致 marketplace 拒绝加载）。
+
 ## 技能怎么用
 
 技能是**按需加载**的：agent 只在请求命中 `SKILL.md` frontmatter 里的 `description` 时才读它。所以 `description` 写的是触发条件，不是功能介绍。
@@ -67,10 +78,14 @@ cp -R skills/_template skills/my-new-skill
 
 `_template` 目录不会被当成真技能安装（名字以下划线开头），但会被校验，可以当作格式参考。
 
+新增后记得把它加进 `.claude-plugin/marketplace.json` 的 `skills` 数组 —— `./scripts/validate-marketplace.sh` 会检查两边是否一致，漏了会报错。
+
 ## 仓库结构
 
 ```text
 dsh-skills/
+├── .claude-plugin/
+│   └── marketplace.json        # Claude Code 插件市场清单（skills-only，指向 skills/）
 ├── skills/
 │   ├── _template/              # 新增技能骨架（不参与安装）
 │   └── dsh-toolcall-guard/
@@ -80,7 +95,8 @@ dsh-skills/
 │       └── tests/
 ├── scripts/
 │   ├── install.sh
-│   └── validate.sh
+│   ├── validate.sh
+│   └── validate-marketplace.sh
 ├── .github/workflows/validate.yml
 ├── LICENSE
 └── README.md
@@ -89,11 +105,14 @@ dsh-skills/
 ## 校验
 
 ```bash
-./scripts/validate.sh          # 结构校验（CI 跑同一个脚本）
-node --test skills/dsh-toolcall-guard/tests/
+./scripts/validate.sh             # 结构与 frontmatter（CI 跑同一个脚本）
+./scripts/validate-marketplace.sh # 插件清单与 skills/ 是否一致（CI 跑同一个脚本）
+node --test skills/dsh-toolcall-guard/tests/parse-toolcall.test.mjs
 ```
 
-`validate.sh` 检查：`SKILL.md` 存在且 frontmatter 合法、`name` 与目录名一致且符合命名规范、`description` 非空、`SKILL.md` 内引用的相对路径真实存在、目录内无 `.DS_Store` 与嵌套 git 仓库。
+`validate.sh` 检查：`SKILL.md` 存在且 frontmatter 合法、`name` 与目录名一致且符合命名规范、`description` 非空且不超 1024 字符、`SKILL.md` 内引用的相对路径真实存在、目录内无 `.DS_Store` 与嵌套 git 仓库。
+
+`validate-marketplace.sh` 检查：清单 JSON 合法、marketplace 名不是 Claude Code 保留名、每个技能条目真实存在且含 `SKILL.md`、`skills/` 下的真技能没有漏声明。
 
 ## License
 

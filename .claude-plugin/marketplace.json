@@ -1,0 +1,32 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "plyflai-dsh-skills",
+  "owner": {
+    "name": "plyflai",
+    "url": "https://github.com/plyflai"
+  },
+  "metadata": {
+    "description": "DeepSeek Harness 专属 Agent Skills：面向 harness 本身的开发、排障、运维与工具调用可靠性",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "dsh-skills",
+      "displayName": "DeepSeek Harness Skills",
+      "description": "针对 DeepSeek Harness（DSH）的技能集合。首批包含 dsh-toolcall-guard：模型把工具调用输出成伪 XML 文本块导致会话卡死时，引导模型原生重发并回到原任务。",
+      "source": "./",
+      "strict": false,
+      "license": "MIT",
+      "category": "development",
+      "keywords": [
+        "deepseek-harness",
+        "dsh",
+        "tool-calling",
+        "agent-skills"
+      ],
+      "skills": [
+        "./skills/dsh-toolcall-guard"
+      ]
+    }
+  ]
+}

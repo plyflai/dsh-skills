@@ -15,6 +15,9 @@ jobs:
       - name: 校验技能结构
         run: ./scripts/validate.sh
 
+      - name: 校验 marketplace.json
+        run: ./scripts/validate-marketplace.sh
+
       - name: 冒烟测试安装脚本
         run: |
           ./scripts/install.sh --list

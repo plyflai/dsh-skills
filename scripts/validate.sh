@@ -32,7 +32,7 @@ fm_value() {
   ' "$file"
 }
 
-printf '\n\033[1m校验 DSH skills\033[0m  (%s)\n\n' "$SKILLS_DIR"
+printf '\n\033[1m校验 dsh skills\033[0m  (%s)\n\n' "$SKILLS_DIR"
 
 for dir in "$SKILLS_DIR"/*/; do
   [ -d "$dir" ] || continue
@@ -78,6 +78,8 @@ for dir in "$SKILLS_DIR"/*/; do
     err "frontmatter 缺少 description（agent 靠它决定何时加载本技能）"
   elif [ "${#fm_desc}" -lt 20 ]; then
     err "description 过短（${#fm_desc} 字符），应说明「什么时候用」"
+  elif [ "${#fm_desc}" -gt 1024 ]; then
+    err "description 超过 1024 字符（规范上限）"
   else
     ok "description 存在（${#fm_desc} 字符）"
   fi
