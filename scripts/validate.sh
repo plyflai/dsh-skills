@@ -124,6 +124,23 @@ PY
   else
     ok "无嵌套 git 仓库"
   fi
+
+  # --- 7. 无符号链接 ---
+  # 宿主侧安装器整目录拷贝技能；Codex 的 skill-installer 遇到 symlink 直接拒绝安装。
+  if [ -n "$(find "$dir" -type l -print -quit)" ]; then
+    err "技能目录内有符号链接（安装会被拒绝）：$(find "$dir" -type l | head -3 | tr '\n' ' ')"
+  else
+    ok "无符号链接"
+  fi
+
+  # --- 8. 无 agent 指令文件 ---
+  # 整目录拷贝会把这类文件装到用户机器上，被宿主当作项目级指令读取。
+  stray="$(find "$dir" -maxdepth 2 -type f \( -name 'AGENTS.md' -o -name 'CLAUDE.md' \) -print | sed "s|^$dir/||" | tr '\n' ' ')"
+  if [ -n "$stray" ]; then
+    err "技能目录内有 agent 指令文件（会被装到用户机器上）：$stray"
+  else
+    ok "无 agent 指令文件"
+  fi
   echo
 done
 
