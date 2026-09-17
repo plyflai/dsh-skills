@@ -1,0 +1,45 @@
+name: badge
+
+# 让 README 里的技能数徽章随 skills/ 自动更新，避免手写数字过期。
+on:
+  push:
+    branches: [main]
+    paths: ['skills/**']
+
+permissions:
+  contents: write
+
+jobs:
+  count:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 统计技能数（下划线开头的骨架不计入）
+        id: count
+        run: |
+          n=$(find skills -mindepth 1 -maxdepth 1 -type d ! -name '_*' | wc -l | tr -d ' ')
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+      - name: 更新 README 徽章
+        run: |
+          python3 - "${{ steps.count.outputs.n }}" <<'PY'
+          import re, sys, pathlib
+          n = sys.argv[1]
+          p = pathlib.Path('README.md')
+          t = p.read_text('utf-8')
+          new = re.sub(r'skills-\d+-blue', f'skills-{n}-blue', t, count=1)
+          if new != t:
+              p.write_text(new, 'utf-8')
+              print(f'badge -> skills-{n}-blue')
+          else:
+              print('badge 已是最新')
+          PY
+      - name: 提交
+        run: |
+          if git diff --quiet; then
+            echo "无变化"; exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "chore: 同步技能数徽章 [skip ci]"
+          git push

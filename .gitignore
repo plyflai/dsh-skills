@@ -1,0 +1,8 @@
+.DS_Store
+**/.DS_Store
+
+# 技能目录内不应嵌套 git 仓库（会变成 submodule/subtree 隐患）
+skills/*/.git/
+
+node_modules/
+*.log

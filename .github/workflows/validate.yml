@@ -1,0 +1,20 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 校验技能结构
+        run: ./scripts/validate.sh
+      - name: 冒烟测试安装脚本
+        run: |
+          ./scripts/install.sh --list
+          ./scripts/install.sh --all --target "$RUNNER_TEMP/skills" --force
+          test -f "$RUNNER_TEMP/skills/deeptalk/SKILL.md"
