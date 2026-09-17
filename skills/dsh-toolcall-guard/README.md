@@ -55,9 +55,18 @@ git clone https://github.com/plyflai/dsh-skills && cd dsh-skills
 
 `~/.dsh/skills` 是 DSH skill-filesystem 的用户根目录，watch 默认开启：软链接就位后下一个模型 step 即进入技能目录，无需重启。
 
-其他 harness 的技能目录：
+其他 harness 的技能目录 —— 技能按目录认，惯例放这两处：
 
-<!-- HARNESS_TABLE -->
+| | 目录 |
+| --- | --- |
+| 用户级 | `~/.agents/skills/dsh-toolcall-guard/`（你的机器，所有项目都能用） |
+| 项目级 | `<仓库>/.agents/skills/dsh-toolcall-guard/`（写进 git 团队共用） |
+
+| 举例 | 它的目录 |
+| --- | --- |
+| Codex | 读 `~/.agents/skills/` |
+| Claude Code | `~/.claude/skills/`（项目内 `.claude/skills/`） |
+| DSH | 读 `~/.agents/skills/`，也认 `~/.dsh/skills/` |
 
 ## 测试
 

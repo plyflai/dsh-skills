@@ -59,61 +59,41 @@ git clone https://github.com/plyflai/dsh-skills && cd dsh-skills
 
 也可以手动把 `skills/<技能名>/` 整个目录拷进技能目录。
 
-### 各 harness 装在哪
+### 装到哪
 
-| Harness | 用户级 | 项目级 | 调用 |
-| --- | --- | --- | --- |
-| **跨工具通用** | `~/.agents/skills/` | `.agents/skills/` | 取决于各 harness |
-| **Codex CLI** | `~/.agents/skills/` | `.agents/skills/` | `/skills` 或 `$<技能名>` |
-| **Gemini CLI** | `~/.agents/skills/`<br>`~/.gemini/skills/` | `.agents/skills/`<br>`.gemini/skills/` | 说完需求后模型激活，需你确认 |
-| **Cursor** | `~/.agents/skills/`<br>`~/.cursor/skills/` | `.agents/skills/`<br>`.cursor/skills/` | 说完需求后模型自行调用 |
-| **Roo Code** | `~/.agents/skills/`<br>`~/.roo/skills/` | `.agents/skills/`<br>`.roo/skills/` | 说完需求后模型自行调用 |
-| **Qwen Code** | `~/.qwen/skills/` | `.qwen/skills/` | `/<技能名>` 或 `/skills` 面板 |
-| **Claude Code** | `~/.claude/skills/` | `.claude/skills/` | 说完需求后模型自行调用，或 `/<技能名>` |
-| **DSH** | `~/.agents/skills/`<br>`~/.dsh/skills/` | `.agents/skills/`<br>`.dsh/skills/` | 说完需求后模型自行加载 |
-| **Cline** | `~/.cline/skills/` | `.cline/skills/` | 需先在 Settings → Features 打开 Skills |
-| **GitHub Copilot** | — | `.github/skills/` | 仓库/组织级，随 Copilot coding agent |
-| **WorkBuddy** | `~/.workbuddy/skills/` | `.codebuddy/skills/` | 说完需求后模型自行调用（腾讯云 CodeBuddy 家族） |
+**按目录认技能**，没有别的东西要注册。惯例是两个位置：
 
-### 装一次，多个 harness 共用
+| | 目录 | 用途 |
+| --- | --- | --- |
+| 用户级 | `~/.agents/skills/<技能名>/` | 你自己的机器，所有项目都能用 |
+| 项目级 | `<仓库>/.agents/skills/<技能名>/` | 跟着仓库走，写进 git 让团队共用 |
 
-`~/.agents/skills/` 是事实上的**跨工具共用路径**：Codex、Gemini CLI、Cursor、Roo Code、DSH 都读它，Gemini CLI 官方文档原话是「`.agents/skills/` 别名提供了一条可互操作的路径，跨不同 AI 工具保持兼容」。所以最省事的装法是一次装到那儿：
+`~/.agents/skills/` 是约定俗成的**跨工具共用路径**——一份目录，读它的 harness 都能用。也有的 harness 只认自己的目录，那就再放一份（`--link` 软链过去，免得维护多份）：
 
-```bash
-git clone https://github.com/plyflai/agent-skills && cd agent-skills
-./scripts/install.sh deeptalk --target ~/.agents/skills
-```
+| 举例 | 它的目录 |
+| --- | --- |
+| Codex | 读 `~/.agents/skills/` |
+| Claude Code | `~/.claude/skills/`（项目内 `.claude/skills/`） |
+| DSH | 读 `~/.agents/skills/`，也认 `~/.dsh/skills/` |
 
-剩下三家要各装一份（`--link` 用软链接，免得复制多份）：
-
-```bash
-./scripts/install.sh deeptalk --target ~/.claude/skills --link   # Claude Code
-./scripts/install.sh deeptalk --target ~/.qwen/skills   --link   # Qwen Code
-./scripts/install.sh deeptalk --target ~/.cline/skills  --link   # Cline
-```
-
-### 用各 harness 自带的安装器
+各家自带的安装器也认这个仓库（以 Codex、Claude Code 为例）：
 
 ```bash
 # Codex
-codex plugin marketplace add plyflai/agent-skills
-codex plugin add deeptalk@plyflai-skills
-
-# Gemini CLI
-gemini skills install https://github.com/plyflai/agent-skills.git --path skills/deeptalk
+codex plugin marketplace add plyflai/dsh-skills
+codex plugin add dsh-toolcall-guard@plyflai-dsh-skills
 
 # Claude Code
-/plugin marketplace add plyflai/agent-skills
-/plugin install deeptalk@plyflai-skills
+/plugin marketplace add plyflai/dsh-skills
+/plugin install dsh-toolcall-guard@plyflai-dsh-skills
 ```
 
-> `.claude-plugin/marketplace.json` 不只 Claude Code 读——**Codex 也读**（实测 `codex plugin marketplace add` 能解析出 `deeptalk@plyflai-skills` 并安装成功）。所以这一个文件同时服务两个 harness。
+> `.claude-plugin/marketplace.json` 不只 Claude Code 读——**Codex 也读**（实测 `codex plugin marketplace add` 能解析出插件并安装成功）。所以这一个文件同时服务两个 harness。你的 harness 不在上面三个里，就在它自己的文档里搜「skills 目录」，放进去即可。
 
 ### 目录名与 `agents/` 子目录
 
-- 技能目录名要和 `SKILL.md` 里的 `name` 一致——多数 harness 直接按目录名注册。
-- `agents/openai.yaml` 只有 Codex 用（界面元数据），**其他 harness 会忽略整个 `agents/`**，不影响加载。
-- `~/.agents/skills/` 与 `~/.codex/skills/` 都能被 Codex 发现：前者是官方文档列出的发现路径，后者是 `$skill-installer` 的默认安装位置。
+- 技能目录名要和 `SKILL.md` 里的 `name` 一致——harness 直接按目录名注册。
+- `agents/openai.yaml` 只有 Codex 用（界面元数据），其他 harness 会忽略整个 `agents/`，不影响加载。
 
 ### 调用方式
 
