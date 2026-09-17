@@ -8,7 +8,6 @@ SKILLS_DIR="${SKILLS_DIR_OVERRIDE:-$REPO_ROOT/skills}"
 
 ERRORS=0
 CHECKED=0
-TEMPLATES=0
 
 err() { printf '  \033[31m✗\033[0m %s\n' "$1"; ERRORS=$((ERRORS + 1)); }
 ok()  { printf '  \033[32m✓\033[0m %s\n' "$1"; }
@@ -37,7 +36,6 @@ printf '\n\033[1m校验 dsh skills\033[0m  (%s)\n\n' "$SKILLS_DIR"
 for dir in "$SKILLS_DIR"/*/; do
   [ -d "$dir" ] || continue
   name="$(basename "$dir")"
-  case "$name" in _*) TEMPLATES=$((TEMPLATES + 1)) ;; esac
   CHECKED=$((CHECKED + 1))
   printf '\033[1m%s\033[0m\n' "$name"
 
@@ -64,8 +62,8 @@ for dir in "$SKILLS_DIR"/*/; do
     err "frontmatter 缺少 name"
   elif [ "$fm_name" != "$name" ]; then
     err "name \"$fm_name\" 与目录名 \"$name\" 不一致"
-  elif ! printf '%s' "$fm_name" | grep -Eq '^_?[a-z0-9]+(-[a-z0-9]+)*$'; then
-    err "name \"$fm_name\" 不符合规范（只允许小写字母、数字、连字符；骨架可用 _ 前缀）"
+  elif ! printf '%s' "$fm_name" | grep -Eq '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+    err "name \"$fm_name\" 不符合规范（只允许小写字母、数字、连字符）"
   elif [ "${#fm_name}" -gt 64 ]; then
     err "name \"$fm_name\" 超过 64 字符"
   else
@@ -176,5 +174,4 @@ if [ "$ERRORS" -gt 0 ]; then
 fi
 
 printf '\033[32m通过：%d 个技能全部合规\033[0m' "$CHECKED"
-[ "$TEMPLATES" -gt 0 ] && printf '（含 %d 个骨架，不参与安装）' "$TEMPLATES"
 printf '\n\n'

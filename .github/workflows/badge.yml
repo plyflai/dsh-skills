@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: 统计技能数（下划线开头的骨架不计入）
+      - name: 统计技能数（skills/ 下的目录数）
         id: count
         run: |
-          n=$(find skills -mindepth 1 -maxdepth 1 -type d ! -name '_*' | wc -l | tr -d ' ')
+          n=$(find skills -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
           echo "n=$n" >> "$GITHUB_OUTPUT"
       - name: 更新 README 徽章
         run: |

@@ -11,13 +11,8 @@
 | 技能 | 一句话 | 依赖 |
 | --- | --- | --- |
 | [`dsh-toolcall-guard`](skills/dsh-toolcall-guard/) | 模型把工具调用输出成 `<tool_call>` 伪 XML 文本块导致会话卡死时，按需加载并引导模型原生重发、停止重复、继续原任务 | Node ≥ 18（仅可选的确定性解析脚本） |
-| [`_template`](skills/_template/) | 新增技能的骨架，复制改名即用（以下划线开头，不参与安装） | 无 |
 
-通用技能（与 harness 解耦）不在这个仓库，见 [plyflai/agent-skills](https://github.com/plyflai/agent-skills)。
-
-**判断标准**：如果这个技能里的知识换了 harness 就作废，它属于这里；否则归 agent-skills。
-
-## dsh-toolcall-guard
+### dsh-toolcall-guard
 
 > **模型把工具调用写成了文本块，会话卡死时救回来。** 它输出 `<tool_call>` 伪 XML 而工具从未执行——本技能引导模型用原生 function call 重发恰好一次，然后回到原任务。
 
@@ -37,6 +32,10 @@ git clone https://github.com/plyflai/dsh-skills && cd dsh-skills
 ```
 
 `~/.dsh/skills` 是 DSH skill-filesystem 的用户根目录，watch 默认开启：软链接就位后下一个模型 step 就进入技能目录，**无需重启**。
+
+通用技能（与 harness 解耦）不在这个仓库，见 [plyflai/agent-skills](https://github.com/plyflai/agent-skills)。
+
+**判断标准**：如果这个技能里的知识换了 harness 就作废，它属于这里；否则归 agent-skills。
 
 ## 安装
 
@@ -102,11 +101,25 @@ Agent Skills 是**按需加载**的：harness 启动时只注入每个技能的 
 
 ## 新增一个技能
 
-```bash
-cp -R skills/_template skills/my-new-skill
-# 改 skills/my-new-skill/SKILL.md 的 name（必须与目录名一致）与 description
-./scripts/validate.sh
+在 `skills/` 下建一个目录，目录名就是技能名，里面放一个 `SKILL.md`：
+
+```text
+skills/my-new-skill/
+└── SKILL.md
 ```
+
+`SKILL.md` 开头是 frontmatter，`name` 必须与目录名一致，`description` 写「什么时候用我」：
+
+```markdown
+---
+name: my-new-skill
+description: 一句话说明它在什么情况下该被加载。
+---
+
+正文：技能被加载后要怎么做。
+```
+
+细节多就拆进 `references/`，需要确定性计算就放 `scripts/`（可配 `tests/`）——`SKILL.md` 只留入口，其余按需读取。写完跑 `./scripts/validate.sh`。
 
 新增后把它作为**独立条目**加进 `.claude-plugin/marketplace.json`——一个条目一个技能，条目名等于技能目录名。`./scripts/validate-marketplace.sh` 会检查这两点，合并成伞形条目会被直接报错。
 
@@ -115,7 +128,6 @@ cp -R skills/_template skills/my-new-skill
 ```text
 dsh-skills/
 ├── skills/
-│   ├── _template/              # 新增技能骨架（不参与安装）
 │   └── dsh-toolcall-guard/     # 一个技能一个目录，目录名 = SKILL.md 里的 name
 │       ├── SKILL.md            # 入口，必须
 │       ├── README.md           # 这个技能自己的说明页

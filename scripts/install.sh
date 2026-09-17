@@ -40,7 +40,7 @@ while [ $# -gt 0 ]; do
     -l|--link)   LINK=1; shift ;;
     -f|--force)  FORCE=1; shift ;;
     --all)       ALL=1; shift ;;
-    --list)      printf '可用技能：\n'; for d in "$SKILLS_DIR"/*/; do [ -d "$d" ] || continue; case "$(basename "$d")" in _*) continue ;; esac; printf '  %s\n' "$(basename "$d")"; done; exit 0 ;;
+    --list)      printf '可用技能：\n'; for d in "$SKILLS_DIR"/*/; do [ -d "$d" ] || continue; printf '  %s\n' "$(basename "$d")"; done; exit 0 ;;
     -h|--help)   usage; exit 0 ;;
     -*)          echo "未知选项：$1" >&2; usage >&2; exit 2 ;;
     *)           SELECTED+=("$1"); shift ;;
@@ -51,7 +51,6 @@ if [ "$ALL" -eq 1 ]; then
   SELECTED=()
   for d in "$SKILLS_DIR"/*/; do
     [ -d "$d" ] || continue
-    case "$(basename "$d")" in _*) continue ;; esac   # 下划线开头 = 骨架，不参与安装
     SELECTED+=("$(basename "$d")")
   done
 fi

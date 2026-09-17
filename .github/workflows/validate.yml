@@ -30,21 +30,28 @@ jobs:
         run: |
           ./scripts/install.sh --list
 
-          # _template 是骨架，必须被跳过
-          if ./scripts/install.sh --list | grep -q '_template'; then
-            echo "::error::--list 不应列出 _template"; exit 1
-          fi
-
           # 至少存在一个真技能
-          first=$(find skills -mindepth 1 -maxdepth 1 -type d ! -name '_*' -exec basename {} \; | head -1)
+          first=$(find skills -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | head -1)
           if [ -z "$first" ]; then
             echo "::error::skills/ 下没有可安装的技能"; exit 1
           fi
 
-          # --all 装全部；--force 的退出码应为 0，且骨架不得被装上
+          # --list 必须列出每个技能
+          for d in skills/*/; do
+            name=$(basename "$d")
+            ./scripts/install.sh --list | grep -qx "  $name" || {
+              echo "::error::--list 未列出技能 $name"; exit 1; }
+          done
+
+          # --all 装全部；--force 的退出码应为 0
           ./scripts/install.sh --all --target "$RUNNER_TEMP/skills" --force
           test -f "$RUNNER_TEMP/skills/$first/SKILL.md"
-          test ! -e "$RUNNER_TEMP/skills/_template"
+
+          # 装上的技能数应与 skills/ 下的目录数一致
+          installed=$(find "$RUNNER_TEMP/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+          expected=$(find skills -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+          test "$installed" = "$expected" || {
+            echo "::error::装了 $installed 个技能，skills/ 下有 $expected 个"; exit 1; }
 
           # 指定不存在的技能必须非零退出
           if ./scripts/install.sh no-such-skill --target "$RUNNER_TEMP/skills" >/dev/null 2>&1; then
