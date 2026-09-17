@@ -18,6 +18,14 @@ jobs:
       - name: 校验 marketplace.json
         run: ./scripts/validate-marketplace.sh
 
+      - name: 对官方 schema 校验清单（尽力而为）
+        continue-on-error: true
+        run: |
+          # 需要联网取 schema，失败不影响结论——上面的本地校验才是权威
+          pip install --quiet jsonschema
+          curl -sSL --max-time 20 https://www.schemastore.org/claude-code-marketplace.json -o /tmp/mkt-schema.json
+          python3 -c "import json, jsonschema, sys; s=json.load(open('/tmp/mkt-schema.json')); d=json.load(open('.claude-plugin/marketplace.json')); e=sorted(jsonschema.Draft202012Validator(s).iter_errors(d), key=lambda x: list(x.path)); [print('::warning::marketplace.json %s: %s' % ('.'.join(map(str, x.path)), x.message)) for x in e]; print('schema 校验通过' if not e else '%d 处与 schema 不符' % len(e))"
+
       - name: 冒烟测试安装脚本
         run: |
           ./scripts/install.sh --list
