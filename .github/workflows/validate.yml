@@ -11,10 +11,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: 校验技能结构
         run: ./scripts/validate.sh
+
       - name: 冒烟测试安装脚本
         run: |
           ./scripts/install.sh --list
+
+          # _template 是骨架，必须被跳过
+          if ./scripts/install.sh --list | grep -q '_template'; then
+            echo "::error::--list 不应列出 _template"; exit 1
+          fi
+
+          # 至少存在一个真技能
+          first=$(find skills -mindepth 1 -maxdepth 1 -type d ! -name '_*' -exec basename {} \; | head -1)
+          if [ -z "$first" ]; then
+            echo "::error::skills/ 下没有可安装的技能"; exit 1
+          fi
+
+          # --all 装全部；--force 的退出码应为 0，且骨架不得被装上
           ./scripts/install.sh --all --target "$RUNNER_TEMP/skills" --force
-          test -f "$RUNNER_TEMP/skills/deeptalk/SKILL.md"
+          test -f "$RUNNER_TEMP/skills/$first/SKILL.md"
+          test ! -e "$RUNNER_TEMP/skills/_template"
+
+          # 指定不存在的技能必须非零退出
+          if ./scripts/install.sh no-such-skill --target "$RUNNER_TEMP/skills" >/dev/null 2>&1; then
+            echo "::error::安装不存在的技能应返回非零退出码"; exit 1
+          fi
