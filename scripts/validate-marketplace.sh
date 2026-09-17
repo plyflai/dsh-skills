@@ -101,11 +101,20 @@ for i, entry in enumerate(plugins):
     if not isinstance(skills, list) or not skills:
         err(f'{label} 缺少 skills 数组')
         continue
+    # 每个技能必须是它自己的一等条目：一个 plugin 一个 skill。
+    # 否则技能会被塞进一个伞形条目里，用户装到的是「某个大类」而不是这个技能，
+    # 技能名与安装名对不上，技能本身也失去了自己的身份。
+    if len(skills) > 1:
+        err(f'{label} 声明了 {len(skills)} 个技能；每个技能应各自成为一个 plugin 条目，不要用伞形条目合并')
     for s in skills:
         if not isinstance(s, str) or not s.startswith('./'):
             err(f'{label} skills 项 "{s}" 必须是以 ./ 开头的相对路径')
             continue
         declared_paths.append((label, s))
+        # 条目名应与技能目录名一致：用户看到和安装的就是技能名本身
+        skill_dir_name = pathlib.PurePosixPath(s).name
+        if pname and pname != skill_dir_name:
+            err(f'{label} name "{pname}" 与技能目录名 "{skill_dir_name}" 不一致，应改成目录名')
 
     ok(f'{label} name = {pname or "?"}，声明 {len(skills)} 个技能')
 

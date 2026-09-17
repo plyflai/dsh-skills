@@ -4,6 +4,8 @@
 
 **按需加载，零常驻 token 成本**：它不挂在任何 hook 上，未命中触发条件时不进入上下文。
 
+这是 [plyflai/dsh-skills](https://github.com/plyflai/dsh-skills) 里的技能之一。一个技能一个目录，`dsh-toolcall-guard` 就是它自己的名字。
+
 ## 触发 / 不触发
 
 触发（加载即按 [recovery-protocol.md](references/recovery-protocol.md) 行动）：
@@ -43,11 +45,19 @@
 
 ## 安装
 
+这个技能讲的是 DSH 的工具调用约定，**知识本身绑定 DSH**，但技能目录结构与 harness 无关（`SKILL.md` + 可选 `references/` `scripts/`）。装到哪：
+
 ```bash
-../../scripts/install.sh dsh-toolcall-guard --target ~/.dsh/skills
+git clone https://github.com/plyflai/dsh-skills && cd dsh-skills
+./scripts/install.sh dsh-toolcall-guard --target <你的技能目录>          # 复制
+./scripts/install.sh dsh-toolcall-guard --target <你的技能目录> --link   # 软链接
 ```
 
 `~/.dsh/skills` 是 DSH skill-filesystem 的用户根目录，watch 默认开启：软链接就位后下一个模型 step 即进入技能目录，无需重启。
+
+其他 harness 的技能目录：
+
+<!-- HARNESS_TABLE -->
 
 ## 测试
 
