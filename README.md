@@ -10,28 +10,7 @@
 
 | 技能 | 一句话 | 依赖 |
 | --- | --- | --- |
-| [`dsh-toolcall-guard`](skills/dsh-toolcall-guard/) | 模型把工具调用输出成 `<tool_call>` 伪 XML 文本块导致会话卡死时，按需加载并引导模型原生重发、停止重复、继续原任务 | Node ≥ 18（仅可选的确定性解析脚本） |
-
-### dsh-toolcall-guard
-
-> **模型把工具调用写成了文本块，会话卡死时救回来。** 它输出 `<tool_call>` 伪 XML 而工具从未执行——本技能引导模型用原生 function call 重发恰好一次，然后回到原任务。
-
-[**→ 完整说明（触发条件 / 边界 / 测试）**](skills/dsh-toolcall-guard/)
-
-这些情况会命中它：
-
-- 模型最近的输出里有 `<tool_call>` / `<function=...>` 文本块，而对应工具从未执行
-- 模型连续重复同一个失败调用 ≥ 2 次
-- 用户直接指出「工具没执行 / 会话卡住 / 别再用 XML 块」
-
-**按需加载，零常驻 token 成本**——它不挂在任何 hook 上，未命中触发条件时不进入上下文。
-
-```bash
-git clone https://github.com/plyflai/dsh-skills && cd dsh-skills
-./scripts/install.sh dsh-toolcall-guard --target ~/.dsh/skills
-```
-
-`~/.dsh/skills` 是 DSH skill-filesystem 的用户根目录，watch 默认开启：软链接就位后下一个模型 step 就进入技能目录，**无需重启**。
+| [`dsh-toolcall-guard`](skills/dsh-toolcall-guard/) | **模型把工具调用写成文本块、会话卡死时救回来**：模型输出 `<tool_call>` 伪 XML 而工具从未执行，本技能引导它用原生 function call 重发恰好一次，然后回到原任务。<br>触发：最近的输出里有未执行的 `<tool_call>` 块、连续重复同一失败调用 ≥ 2 次，或你直接说「工具没执行 / 会话卡住 / 别再用 XML 块」。<br>按需加载、零常驻 token 成本——不挂任何 hook，未命中触发条件时不进上下文。<br>[→ 完整说明（触发条件 / 边界 / 测试）](skills/dsh-toolcall-guard/) | Node ≥ 18（仅可选的确定性解析脚本） |
 
 通用技能（与 harness 解耦）不在这个仓库，见 [plyflai/agent-skills](https://github.com/plyflai/agent-skills)。
 
@@ -49,6 +28,8 @@ git clone https://github.com/plyflai/dsh-skills && cd dsh-skills
 ```
 
 也可以手动把 `skills/<技能名>/` 整个目录拷进技能目录。
+
+DSH 侧的 `~/.dsh/skills` 和 `<项目>/.dsh/skills` 都在 skill-filesystem 的监视范围内（watch 默认开），装进去后下一个模型 step 就能看到技能，**无需重启**。
 
 ### 装到哪
 
